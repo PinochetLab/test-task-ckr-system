@@ -9,7 +9,7 @@ using Zenject;
 
 namespace TestTask.Features.Dogs.View
 {
-    public sealed class DogBreedsView : TabScreenView
+    public sealed class DogBreedsView : TabScreenView, IDogBreedsView
     {
         [SerializeField] private RectTransform _content;
         [SerializeField] private LoadingIndicatorView _loader;

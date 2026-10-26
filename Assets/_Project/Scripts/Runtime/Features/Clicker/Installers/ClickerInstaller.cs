@@ -15,7 +15,7 @@ namespace TestTask.Features.Clicker.Installers
 
         public override void InstallBindings()
         {
-            Container.BindInstance(_view).AsSingle();
+            Container.BindInterfacesAndSelfTo<ClickerView>().FromInstance(_view).AsSingle();
 
             Container.BindInterfacesAndSelfTo<ClickerModel>()
                 .FromMethod(context =>
@@ -27,7 +27,7 @@ namespace TestTask.Features.Clicker.Installers
 
             Container.Bind<ClickerRules>().AsSingle();
             Container.BindInterfacesAndSelfTo<ClickerTicker>().AsSingle();
-            Container.Bind<ClickerEffectsPlayer>().AsSingle();
+            Container.BindInterfacesTo<ClickerEffectsPlayer>().AsSingle();
 
             Container.BindInterfacesAndSelfTo<ClickerPresenter>().AsSingle();
         }

@@ -13,7 +13,7 @@ namespace TestTask.Features.Dogs.View
     /// дальше описание прокручивается внутри панели.
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
-    public sealed class BreedPopupView : MonoBehaviour
+    public sealed class BreedPopupView : MonoBehaviour, IBreedPopupView
     {
         [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private RectTransform _panel;

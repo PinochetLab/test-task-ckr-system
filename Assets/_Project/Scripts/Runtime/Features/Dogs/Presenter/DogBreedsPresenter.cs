@@ -24,15 +24,15 @@ namespace TestTask.Features.Dogs.Presenter
         private const string DetailsErrorTitle = "Ошибка";
         private const string DetailsErrorMessage = "Не удалось загрузить описание породы";
 
-        private readonly DogBreedsView _view;
-        private readonly BreedPopupView _popup;
+        private readonly IDogBreedsView _view;
+        private readonly IBreedPopupView _popup;
         private readonly IDogBreedsService _service;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         private CancellationTokenSource _tabCts;
         private CancellationTokenSource _breedCts;
 
-        public DogBreedsPresenter(DogBreedsView view, BreedPopupView popup, IDogBreedsService service)
+        public DogBreedsPresenter(IDogBreedsView view, IBreedPopupView popup, IDogBreedsService service)
         {
             _view = view;
             _popup = popup;

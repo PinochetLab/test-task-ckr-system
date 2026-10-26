@@ -16,8 +16,8 @@ namespace TestTask.Features.Dogs.Installers
 
         public override void InstallBindings()
         {
-            Container.BindInstance(_view).AsSingle();
-            Container.BindInstance(_popup).AsSingle();
+            Container.BindInterfacesAndSelfTo<DogBreedsView>().FromInstance(_view).AsSingle();
+            Container.BindInterfacesAndSelfTo<BreedPopupView>().FromInstance(_popup).AsSingle();
 
             Container.BindMemoryPool<BreedItemView, BreedItemView.Pool>()
                 .WithInitialSize(_itemPoolSize)

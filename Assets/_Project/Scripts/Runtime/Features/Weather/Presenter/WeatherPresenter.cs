@@ -28,10 +28,11 @@ namespace TestTask.Features.Weather.Presenter
         // чтобы очередь не копила одинаковые запросы.
         private const int MaxRequestsInFlight = 2;
 
-        private readonly WeatherView _view;
+        private readonly IWeatherView _view;
         private readonly IWeatherService _service;
         private readonly ISpriteLoader _spriteLoader;
         private readonly WeatherConfig _config;
+        private readonly IScheduler _scheduler;
 
         private CancellationTokenSource _cts;
         private IDisposable _timer;
@@ -42,12 +43,19 @@ namespace TestTask.Features.Weather.Presenter
         private int _requestsInFlight;
         private bool _hasResult;
 
-        public WeatherPresenter(WeatherView view, IWeatherService service, ISpriteLoader spriteLoader, WeatherConfig config)
+        /// <param name="scheduler">Планировщик таймера опроса. В игре — главный поток без учёта timeScale, в тестах — ручной.</param>
+        public WeatherPresenter(
+            IWeatherView view,
+            IWeatherService service,
+            ISpriteLoader spriteLoader,
+            WeatherConfig config,
+            IScheduler scheduler)
         {
             _view = view;
             _service = service;
             _spriteLoader = spriteLoader;
             _config = config;
+            _scheduler = scheduler;
         }
 
         public TabId Id => TabId.Weather;
@@ -74,8 +82,8 @@ namespace TestTask.Features.Weather.Presenter
             CancellationToken token = _cts.Token;
             var interval = TimeSpan.FromSeconds(_config.PollIntervalSeconds);
 
-            // Первый запрос сразу, дальше строго раз в interval. Время игры (timeScale) не влияет.
-            _timer = Observable.Timer(TimeSpan.Zero, interval, Scheduler.MainThreadIgnoreTimeScale)
+            // Первый запрос сразу, дальше строго раз в interval.
+            _timer = Observable.Timer(TimeSpan.Zero, interval, _scheduler)
                 .Subscribe(_ => OnTick(token));
         }
 

@@ -1,5 +1,6 @@
 using System;
 using TestTask.Core.Navigation;
+using TestTask.Features.Clicker.Config;
 using TestTask.Features.Clicker.Effects;
 using TestTask.Features.Clicker.Logic;
 using TestTask.Features.Clicker.Model;
@@ -11,25 +12,28 @@ namespace TestTask.Features.Clicker.Presenter
 {
     public sealed class ClickerPresenter : ITabPresenter, IInitializable, IDisposable
     {
-        private readonly ClickerView _view;
+        private readonly IClickerView _view;
         private readonly ClickerModel _model;
         private readonly ClickerRules _rules;
-        private readonly ClickerTicker _ticker;
-        private readonly ClickerEffectsPlayer _effects;
+        private readonly IAutoCollectSource _autoCollect;
+        private readonly IClickerEffects _effects;
+        private readonly ClickerConfig _config;
         private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         public ClickerPresenter(
-            ClickerView view,
+            IClickerView view,
             ClickerModel model,
             ClickerRules rules,
-            ClickerTicker ticker,
-            ClickerEffectsPlayer effects)
+            IAutoCollectSource autoCollect,
+            IClickerEffects effects,
+            ClickerConfig config)
         {
             _view = view;
             _model = model;
             _rules = rules;
-            _ticker = ticker;
+            _autoCollect = autoCollect;
             _effects = effects;
+            _config = config;
         }
 
         public TabId Id => TabId.Clicker;
@@ -52,7 +56,7 @@ namespace TestTask.Features.Clicker.Presenter
 
             // Автосбор — это «кнопка нажалась сама»: тот же фидбек, что и при ручном клике.
             // Эффекты показываем только на открытой вкладке, начисление идёт всегда.
-            _ticker.AutoCollected
+            _autoCollect.AutoCollected
                 .Where(_ => _view.IsVisible)
                 .Subscribe(_ => PlayPressEffects())
                 .AddTo(_disposables);
@@ -81,11 +85,11 @@ namespace TestTask.Features.Clicker.Presenter
                 _view.PlayDenied();
         }
 
-        /// <summary>Полный набор эффектов нажатия: анимация кнопки, звук, частицы, летящая валюта.</summary>
+        /// <summary>Полный набор эффектов нажатия: анимация, частицы, звук.</summary>
         private void PlayPressEffects()
         {
-            _view.PlayClickFeedback();
-            _effects.PlayClick(_view.ClickParticles);
+            _view.PlayClickFeedback(_config.ClickParticlesCount);
+            _effects.PlayClickSound();
         }
     }
 }

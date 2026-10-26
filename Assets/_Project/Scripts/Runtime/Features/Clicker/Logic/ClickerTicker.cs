@@ -9,7 +9,7 @@ namespace TestTask.Features.Clicker.Logic
     /// Таймеры кликера: автосбор и восстановление энергии.
     /// Работают постоянно, независимо от открытой вкладки.
     /// </summary>
-    public sealed class ClickerTicker : IInitializable, IDisposable
+    public sealed class ClickerTicker : IAutoCollectSource, IInitializable, IDisposable
     {
         private readonly ClickerRules _rules;
         private readonly ClickerConfig _config;

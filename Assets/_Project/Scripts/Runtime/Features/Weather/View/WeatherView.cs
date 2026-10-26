@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace TestTask.Features.Weather.View
 {
-    public sealed class WeatherView : TabScreenView
+    public sealed class WeatherView : TabScreenView, IWeatherView
     {
         [SerializeField] private Image _icon;
         [SerializeField] private Text _forecastText;

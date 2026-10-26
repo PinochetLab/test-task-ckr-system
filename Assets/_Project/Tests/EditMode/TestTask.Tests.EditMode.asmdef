@@ -5,6 +5,7 @@
         "TestTask.Runtime",
         "UniTask",
         "UniRx",
+        "Zenject",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

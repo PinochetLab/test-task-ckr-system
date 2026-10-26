@@ -6,7 +6,7 @@ namespace TestTask.Core.UI
     /// Базовый класс экрана вкладки.
     /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
-    public abstract class TabScreenView : MonoBehaviour
+    public abstract class TabScreenView : MonoBehaviour, IScreenView
     {
         public bool IsVisible => gameObject.activeSelf;
 

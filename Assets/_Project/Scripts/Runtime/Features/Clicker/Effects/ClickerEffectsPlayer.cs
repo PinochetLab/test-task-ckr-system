@@ -1,13 +1,12 @@
 using TestTask.Core.Audio;
 using TestTask.Features.Clicker.Config;
-using UnityEngine;
 
 namespace TestTask.Features.Clicker.Effects
 {
     /// <summary>
-    /// Эффекты нажатия кликера: звук и разлёт частиц из ParticleSystem на сцене.
+    /// Звук нажатия кликера. Визуальные эффекты (пульс, частицы) живут во view.
     /// </summary>
-    public sealed class ClickerEffectsPlayer
+    public sealed class ClickerEffectsPlayer : IClickerEffects
     {
         private readonly IAudioService _audio;
         private readonly ClickerConfig _config;
@@ -18,13 +17,9 @@ namespace TestTask.Features.Clicker.Effects
             _config = config;
         }
 
-        /// <param name="particles">Система частиц у кликабельного объекта: разлёт во все стороны.</param>
-        public void PlayClick(ParticleSystem particles)
+        public void PlayClickSound()
         {
             _audio.PlayOneShot(_config.ClickSound, _config.ClickVolume);
-
-            if (particles != null && _config.ClickParticlesCount > 0)
-                particles.Emit(_config.ClickParticlesCount);
         }
     }
 }
