@@ -29,8 +29,7 @@
 ## Запуск
 
 1. Клонировать репозиторий.
-2. Открыть папку в Unity Hub (версия 6000.5.6f1). UniTask, Extenject (Zenject) и Newtonsoft.Json подтянутся сами через `Packages/manifest.json`. UniRx уже лежит в `Assets/Plugins/UniRx`.
-3. Импортировать бесплатный [DOTween](https://assetstore.unity.com/packages/tools/animation/dotween-hotween-v2-27676) из Asset Store (Window → Package Manager → My Assets). В появившемся окне DOTween Utility Panel нажать **Setup DOTween**.
-4. Открыть сцену `Assets/Scenes/Main.unity`, выставить в Game view портретное разрешение (например, 1080×1920) и нажать Play.
+2. Открыть папку в Unity Hub (версия 6000.5.6f1). UniTask, Extenject (Zenject) и Newtonsoft.Json подтянутся сами через `Packages/manifest.json`. UniRx и DOTween уже лежат в репозитории (`Assets/Plugins/UniRx`, `Assets/Plugins/Demigiant`).
+3. Открыть сцену `Assets/Scenes/Main.unity`, выставить в Game view портретное разрешение (например, 1080×1920) и нажать Play.
 
 Тесты: **Window → General → Test Runner → EditMode → Run All**.

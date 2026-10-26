@@ -110,7 +110,3 @@ InitTestScene*.unity*
 
 # Claude Code local settings
 .claude/settings.local.json
-
-# DOTween (Asset Store) — импортируется вручную, см. README
-/[Aa]ssets/Plugins/Demigiant/
-/[Aa]ssets/Plugins/Demigiant.meta
