@@ -579,11 +579,26 @@ namespace TestTask.EditorTools.SceneBuilder
             Text title = CreateText("Title", panel.rectTransform, "Breed", 56, Palette.DarkText, TextAnchor.MiddleCenter, FontStyle.Bold);
             PlaceTop(title.rectTransform, 40f, new Vector2(820f, 110f));
 
-            Text description = CreateText("Description", panel.rectTransform, string.Empty, 38, Palette.DarkText, TextAnchor.UpperLeft);
-            Stretch(description.rectTransform, 50f, 50f, 180f, 200f);
-            description.resizeTextForBestFit = true;
-            description.resizeTextMinSize = 20;
-            description.resizeTextMaxSize = 38;
+            // Высоту панели под текст подгоняет BreedPopupView; длинный текст прокручивается во вьюпорте.
+            RectTransform viewport = Stretch(CreateRect("DescriptionViewport", panel.rectTransform), 50f, 50f, 180f, 200f);
+            viewport.gameObject.AddComponent<RectMask2D>();
+            AddImage(viewport, new Color(0f, 0f, 0f, 0f), true);
+
+            Text description = CreateText("Description", viewport, string.Empty, 38, Palette.DarkText, TextAnchor.UpperLeft);
+            RectTransform descriptionRect = description.rectTransform;
+            descriptionRect.anchorMin = new Vector2(0f, 1f);
+            descriptionRect.anchorMax = new Vector2(1f, 1f);
+            descriptionRect.pivot = new Vector2(0.5f, 1f);
+            descriptionRect.anchoredPosition = Vector2.zero;
+            descriptionRect.sizeDelta = Vector2.zero;
+            description.verticalOverflow = VerticalWrapMode.Overflow;
+
+            var descriptionScroll = viewport.gameObject.AddComponent<ScrollRect>();
+            descriptionScroll.content = descriptionRect;
+            descriptionScroll.viewport = viewport;
+            descriptionScroll.horizontal = false;
+            descriptionScroll.vertical = true;
+            descriptionScroll.movementType = ScrollRect.MovementType.Elastic;
 
             Button close = CreateButton("CloseButton", panel.rectTransform, Palette.Accent, "Закрыть", 44, Color.white, out _);
             Place((RectTransform)close.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 50f), new Vector2(420f, 110f));
@@ -593,6 +608,7 @@ namespace TestTask.EditorTools.SceneBuilder
             SerializedSetter.Set(view, "_panel", panel.rectTransform);
             SerializedSetter.Set(view, "_title", title);
             SerializedSetter.Set(view, "_description", description);
+            SerializedSetter.Set(view, "_descriptionScroll", descriptionScroll);
             SerializedSetter.Set(view, "_closeButton", close);
             SerializedSetter.Set(view, "_backgroundButton", dimButton);
             return view;
