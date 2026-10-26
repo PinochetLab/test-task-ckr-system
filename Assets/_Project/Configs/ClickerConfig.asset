@@ -21,7 +21,6 @@ MonoBehaviour:
   _startEnergy: 1000
   _energyRegenInterval: 10
   _energyRegenAmount: 10
-  _flyingCurrencyCount: 5
-  _clickParticlesCount: 10
+  _clickParticlesCount: 20
   _clickSound: {fileID: 8300000, guid: 29e42ef2d4a3ad244bf566d3cb235152, type: 3}
   _clickVolume: 0.6

@@ -18,6 +18,11 @@ namespace TestTask.EditorTools.SceneBuilder
             Apply(target, propertyName, property => property.intValue = value);
         }
 
+        public static void SetFloat(Object target, string propertyName, float value)
+        {
+            Apply(target, propertyName, property => property.floatValue = value);
+        }
+
         public static void SetArray(Object target, string propertyName, Object[] values)
         {
             Apply(target, propertyName, property =>

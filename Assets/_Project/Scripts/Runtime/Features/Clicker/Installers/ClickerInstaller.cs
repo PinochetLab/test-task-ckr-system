@@ -12,11 +12,6 @@ namespace TestTask.Features.Clicker.Installers
     public sealed class ClickerInstaller : MonoInstaller
     {
         [SerializeField] private ClickerView _view;
-        [SerializeField] private RectTransform _effectsLayer;
-        [SerializeField] private FlyingCurrencyView _flyingCurrencyPrefab;
-        [SerializeField] private UiParticleView _particlePrefab;
-        [SerializeField, Min(0)] private int _flyingCurrencyPoolSize = 10;
-        [SerializeField, Min(0)] private int _particlePoolSize = 20;
 
         public override void InstallBindings()
         {
@@ -33,16 +28,6 @@ namespace TestTask.Features.Clicker.Installers
             Container.Bind<ClickerRules>().AsSingle();
             Container.BindInterfacesAndSelfTo<ClickerTicker>().AsSingle();
             Container.Bind<ClickerEffectsPlayer>().AsSingle();
-
-            Container.BindMemoryPool<FlyingCurrencyView, FlyingCurrencyView.Pool>()
-                .WithInitialSize(_flyingCurrencyPoolSize)
-                .FromComponentInNewPrefab(_flyingCurrencyPrefab)
-                .UnderTransform(_effectsLayer);
-
-            Container.BindMemoryPool<UiParticleView, UiParticleView.Pool>()
-                .WithInitialSize(_particlePoolSize)
-                .FromComponentInNewPrefab(_particlePrefab)
-                .UnderTransform(_effectsLayer);
 
             Container.BindInterfacesAndSelfTo<ClickerPresenter>().AsSingle();
         }

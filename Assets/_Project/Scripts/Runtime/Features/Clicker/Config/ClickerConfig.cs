@@ -21,8 +21,7 @@ namespace TestTask.Features.Clicker.Config
         [SerializeField, Min(0)] private int _energyRegenAmount = 10;
 
         [Header("Эффекты")]
-        [SerializeField, Min(0)] private int _flyingCurrencyCount = 5;
-        [SerializeField, Min(0)] private int _clickParticlesCount = 10;
+        [SerializeField, Min(0)] private int _clickParticlesCount = 20;
         [SerializeField] private AudioClip _clickSound;
         [SerializeField, Range(0f, 1f)] private float _clickVolume = 0.6f;
 
@@ -35,7 +34,6 @@ namespace TestTask.Features.Clicker.Config
         public int StartEnergy => Mathf.Min(_startEnergy, _maxEnergy);
         public float EnergyRegenInterval => _energyRegenInterval;
         public int EnergyRegenAmount => _energyRegenAmount;
-        public int FlyingCurrencyCount => _flyingCurrencyCount;
         public int ClickParticlesCount => _clickParticlesCount;
         public AudioClip ClickSound => _clickSound;
         public float ClickVolume => _clickVolume;

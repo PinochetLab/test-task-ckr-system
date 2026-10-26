@@ -8,8 +8,11 @@ namespace TestTask.Features.Clicker.Effects
     /// </summary>
     public sealed class ButtonPunchAnimator : MonoBehaviour
     {
+        [Tooltip("Сила «пульса» относительно исходного масштаба.")]
         [SerializeField] private float _punchStrength = -0.12f;
         [SerializeField, Min(0.05f)] private float _punchDuration = 0.2f;
+
+        [Tooltip("Амплитуда тряски в единицах родителя (пиксели для UI, юниты для объекта на сцене).")]
         [SerializeField] private float _shakeStrength = 20f;
         [SerializeField, Min(0.05f)] private float _shakeDuration = 0.3f;
 
@@ -27,7 +30,7 @@ namespace TestTask.Features.Clicker.Effects
         {
             ResetState();
             _tween = transform
-                .DOPunchScale(Vector3.one * _punchStrength, _punchDuration, 8, 0.5f)
+                .DOPunchScale(_initialScale * _punchStrength, _punchDuration, 8, 0.5f)
                 .SetLink(gameObject);
         }
 

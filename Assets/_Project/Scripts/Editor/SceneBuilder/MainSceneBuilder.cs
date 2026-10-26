@@ -41,7 +41,7 @@ namespace TestTask.EditorTools.SceneBuilder
         private const string EffectsPrefabsFolder = PrefabsFolder + "/Effects";
         private const string AudioFolder = RootFolder + "/Audio";
 
-        private static readonly string[] GeneratedRootNames = { "UI", "EventSystem", "SceneContext", "Audio" };
+        private static readonly string[] GeneratedRootNames = { "UI", "EventSystem", "SceneContext", "Audio", WorldClickerBuilder.RootName };
 
         private static class Palette
         {
@@ -71,8 +71,6 @@ namespace TestTask.EditorTools.SceneBuilder
             public LoadingIndicatorView Loader;
             public ScreenTitleView ScreenTitle;
             public TabButtonView TabButton;
-            public FlyingCurrencyView FlyingCurrency;
-            public UiParticleView Particle;
             public BreedItemView BreedItem;
         }
 
@@ -170,8 +168,6 @@ namespace TestTask.EditorTools.SceneBuilder
 
             // Префабы из прошлой версии сборщика лежали в корне Prefabs: переносим, чтобы сохранить GUID.
             MoveAssetIfExists($"{PrefabsFolder}/BreedItem.prefab", $"{UiPrefabsFolder}/BreedItem.prefab");
-            MoveAssetIfExists($"{PrefabsFolder}/FlyingCurrency.prefab", $"{EffectsPrefabsFolder}/FlyingCurrency.prefab");
-            MoveAssetIfExists($"{PrefabsFolder}/UiParticle.prefab", $"{EffectsPrefabsFolder}/UiParticle.prefab");
 
             // Порядок важен: BreedItem содержит вложенный префаб LoadingIndicator.
             _prefabs = new Prefabs();
@@ -179,8 +175,6 @@ namespace TestTask.EditorTools.SceneBuilder
             _prefabs.ScreenTitle = SavePrefab<ScreenTitleView>(BuildScreenTitlePrefab(), $"{UiPrefabsFolder}/ScreenTitle.prefab");
             _prefabs.TabButton = SavePrefab<TabButtonView>(BuildTabButtonPrefab(), $"{UiPrefabsFolder}/TabButton.prefab");
             _prefabs.BreedItem = SavePrefab<BreedItemView>(BuildBreedItem(), $"{UiPrefabsFolder}/BreedItem.prefab");
-            _prefabs.FlyingCurrency = SavePrefab<FlyingCurrencyView>(BuildFlyingCurrency(), $"{EffectsPrefabsFolder}/FlyingCurrency.prefab");
-            _prefabs.Particle = SavePrefab<UiParticleView>(BuildParticle(), $"{EffectsPrefabsFolder}/UiParticle.prefab");
             return _prefabs;
         }
 
@@ -225,30 +219,6 @@ namespace TestTask.EditorTools.SceneBuilder
             var rect = (RectTransform)loader.transform;
             rect.sizeDelta = new Vector2(size, size);
             return loader;
-        }
-
-        private static GameObject BuildFlyingCurrency()
-        {
-            RectTransform root = CreateRect("FlyingCurrency", null);
-            root.sizeDelta = new Vector2(44f, 44f);
-            AddImage(root, Palette.Currency);
-
-            Image inner = CreateImage("Inner", root, new Color(1f, 0.68f, 0.1f));
-            Stretch(inner.rectTransform, 10f, 10f, 10f, 10f);
-
-            root.gameObject.AddComponent<FlyingCurrencyView>();
-            return root.gameObject;
-        }
-
-        private static GameObject BuildParticle()
-        {
-            RectTransform root = CreateRect("UiParticle", null);
-            root.sizeDelta = new Vector2(18f, 18f);
-            Image image = AddImage(root, Color.white);
-
-            var view = root.gameObject.AddComponent<UiParticleView>();
-            SerializedSetter.Set(view, "_image", image);
-            return root.gameObject;
         }
 
         private static GameObject BuildBreedItem()
@@ -340,9 +310,7 @@ namespace TestTask.EditorTools.SceneBuilder
 
             canvasRect.gameObject.AddComponent<GraphicRaycaster>();
 
-            Image background = CreateImage("Background", canvasRect, Palette.Background);
-            Stretch(background.rectTransform);
-
+            // У UI нет фона: под ним на сцене кликабельный объект, фон даёт камера.
             RectTransform safeArea = Stretch(CreateRect("SafeArea", canvasRect));
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
 
@@ -350,14 +318,13 @@ namespace TestTask.EditorTools.SceneBuilder
             RectTransform screens = Stretch(CreateRect("Screens", safeArea), 0f, 0f, 0f, tabBarHeight);
 
             ClickerView clickerView = BuildClickerScreen(screens);
+            WorldClickerBuilder.Build(clickerView);
             WeatherView weatherView = BuildWeatherScreen(screens);
             DogBreedsView dogsView = BuildDogsScreen(screens, out RectTransform listContent);
 
             TabBarView tabBar = BuildTabBar(safeArea, tabBarHeight);
             BreedPopupView popup = BuildBreedPopup(safeArea);
 
-            // Слой эффектов внутри экрана кликера: выключается вместе с вкладкой, на других вкладках не виден.
-            RectTransform effectsLayer = Stretch(CreateRect("EffectsLayer", clickerView.transform));
 
             // SceneContext + инсталлеры
             var contextGo = new GameObject("SceneContext");
@@ -369,9 +336,6 @@ namespace TestTask.EditorTools.SceneBuilder
 
             var clickerInstaller = contextGo.AddComponent<ClickerInstaller>();
             SerializedSetter.Set(clickerInstaller, "_view", clickerView);
-            SerializedSetter.Set(clickerInstaller, "_effectsLayer", effectsLayer);
-            SerializedSetter.Set(clickerInstaller, "_flyingCurrencyPrefab", prefabs.FlyingCurrency);
-            SerializedSetter.Set(clickerInstaller, "_particlePrefab", prefabs.Particle);
 
             var weatherInstaller = contextGo.AddComponent<WeatherInstaller>();
             SerializedSetter.Set(weatherInstaller, "_view", weatherView);
@@ -432,15 +396,8 @@ namespace TestTask.EditorTools.SceneBuilder
             Text energyText = CreateText("EnergyText", energyBack.rectTransform, "Энергия: 0 / 0", 36, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(energyText.rectTransform);
 
-            // Кнопка
-            Button clickButton = CreateButton("ClickButton", screen, Palette.ClickButton, "КЛИК", 96, Color.white, out _);
-            PlaceCenter((RectTransform)clickButton.transform, new Vector2(0f, -60f), new Vector2(520f, 520f));
-            var animator = clickButton.gameObject.AddComponent<ButtonPunchAnimator>();
-
-            SerializedSetter.Set(view, "_clickButton", clickButton);
-            SerializedSetter.Set(view, "_buttonAnimator", animator);
+            // Кликабельный объект — не UI, его собирает WorldClickerBuilder.
             SerializedSetter.Set(view, "_currencyText", currencyText);
-            SerializedSetter.Set(view, "_currencyIcon", currencyIcon.rectTransform);
             SerializedSetter.Set(view, "_energyText", energyText);
             SerializedSetter.Set(view, "_energyFill", fillRect);
             SerializedSetter.Set(view, "_energyFillImage", energyFill);

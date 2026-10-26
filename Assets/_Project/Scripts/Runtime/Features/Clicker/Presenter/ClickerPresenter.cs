@@ -85,7 +85,7 @@ namespace TestTask.Features.Clicker.Presenter
         private void PlayPressEffects()
         {
             _view.PlayClickFeedback();
-            _effects.PlayClick(_view.ClickOrigin, _view.CurrencyTarget);
+            _effects.PlayClick(_view.ClickParticles);
         }
     }
 }
