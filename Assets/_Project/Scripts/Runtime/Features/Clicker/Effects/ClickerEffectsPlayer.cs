@@ -45,11 +45,6 @@ namespace TestTask.Features.Clicker.Effects
             SpawnCoins(origin, currencyTarget, _config.FlyingCurrencyCount);
         }
 
-        public void PlayAutoCollect(Vector3 origin, Vector3 currencyTarget)
-        {
-            SpawnCoins(origin, currencyTarget, 1);
-        }
-
         private void SpawnParticles(Vector3 origin, int count)
         {
             for (int i = 0; i < count; i++)

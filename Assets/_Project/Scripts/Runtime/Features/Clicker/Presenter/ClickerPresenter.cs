@@ -50,9 +50,11 @@ namespace TestTask.Features.Clicker.Presenter
                 .Subscribe(_ => OnClicked())
                 .AddTo(_disposables);
 
+            // Автосбор — это «кнопка нажалась сама»: тот же фидбек, что и при ручном клике.
+            // Эффекты показываем только на открытой вкладке, начисление идёт всегда.
             _ticker.AutoCollected
                 .Where(_ => _view.IsVisible)
-                .Subscribe(_ => _effects.PlayAutoCollect(_view.ClickOrigin, _view.CurrencyTarget))
+                .Subscribe(_ => PlayPressEffects())
                 .AddTo(_disposables);
         }
 
@@ -74,14 +76,16 @@ namespace TestTask.Features.Clicker.Presenter
         private void OnClicked()
         {
             if (_rules.TryClick())
-            {
-                _view.PlayClickFeedback();
-                _effects.PlayClick(_view.ClickOrigin, _view.CurrencyTarget);
-            }
+                PlayPressEffects();
             else
-            {
                 _view.PlayDenied();
-            }
+        }
+
+        /// <summary>Полный набор эффектов нажатия: анимация кнопки, звук, частицы, летящая валюта.</summary>
+        private void PlayPressEffects()
+        {
+            _view.PlayClickFeedback();
+            _effects.PlayClick(_view.ClickOrigin, _view.CurrencyTarget);
         }
     }
 }

@@ -356,7 +356,8 @@ namespace TestTask.EditorTools.SceneBuilder
             TabBarView tabBar = BuildTabBar(safeArea, tabBarHeight);
             BreedPopupView popup = BuildBreedPopup(safeArea);
 
-            RectTransform effectsLayer = Stretch(CreateRect("EffectsLayer", canvasRect));
+            // Слой эффектов внутри экрана кликера: выключается вместе с вкладкой, на других вкладках не виден.
+            RectTransform effectsLayer = Stretch(CreateRect("EffectsLayer", clickerView.transform));
 
             // SceneContext + инсталлеры
             var contextGo = new GameObject("SceneContext");
