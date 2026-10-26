@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a402290f45de67e479bd259579cdadf8, type: 3}
+  m_Name: WeatherConfig
+  m_EditorClassIdentifier: TestTask.Runtime::TestTask.Features.Weather.Config.WeatherConfig
+  _forecastUrl: https://api.weather.gov/gridpoints/TOP/32,81/forecast
+  _pollIntervalSeconds: 5
+  _displayFormat: "\u0421\u0435\u0433\u043E\u0434\u043D\u044F - {0}{1}"
