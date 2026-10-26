@@ -22,7 +22,7 @@ namespace TestTask.Features.Weather.Service
             _config = config;
         }
 
-        public async UniTask<WeatherForecast> GetTodayAsync(CancellationToken cancellationToken)
+        public async UniTask<WeatherForecast> GetCurrentAsync(CancellationToken cancellationToken)
         {
             string url = _config.ForecastUrl;
             string body = await _queue.Enqueue(token => _http.GetTextAsync(url, token), cancellationToken);
@@ -33,9 +33,10 @@ namespace TestTask.Features.Weather.Service
             if (periods == null || periods.Length == 0)
                 throw new FormatException("Weather response has no forecast periods");
 
-            // Первый период — ближайший («Today» / «This Afternoon» / «Tonight»).
-            ForecastPeriodDto today = periods[0];
-            return new WeatherForecast(today.Temperature, today.TemperatureUnit, today.Icon);
+            // Первый период — ближайший. Его название («Today» / «This Afternoon» / «Tonight»)
+            // берём из ответа, а не пишем «Сегодня»: вечером первый период — уже ночь.
+            ForecastPeriodDto current = periods[0];
+            return new WeatherForecast(current.Name, current.Temperature, current.TemperatureUnit, current.Icon);
         }
     }
 }

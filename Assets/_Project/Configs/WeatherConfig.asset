@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: TestTask.Runtime::TestTask.Features.Weather.Config.WeatherConfig
   _forecastUrl: https://api.weather.gov/gridpoints/TOP/32,81/forecast
   _pollIntervalSeconds: 5
-  _displayFormat: "\u0421\u0435\u0433\u043E\u0434\u043D\u044F - {0}{1}"
+  _displayFormat: '{0} - {1}{2}'

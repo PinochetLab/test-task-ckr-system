@@ -93,7 +93,7 @@ namespace TestTask.Features.Weather.Presenter
 
             try
             {
-                WeatherForecast forecast = await _service.GetTodayAsync(cancellationToken);
+                WeatherForecast forecast = await _service.GetCurrentAsync(cancellationToken);
                 Sprite icon = await LoadIconAsync(forecast.IconUrl, cancellationToken);
 
                 // Более свежий запрос уже успел показать результат.
@@ -101,7 +101,7 @@ namespace TestTask.Features.Weather.Presenter
                     return;
 
                 _lastAppliedId = requestId;
-                _view.SetForecast(icon, string.Format(_config.DisplayFormat, forecast.Temperature, forecast.Unit));
+                _view.SetForecast(icon, FormatForecast(forecast));
                 _hasData = true;
             }
             catch (OperationCanceledException)
@@ -123,6 +123,16 @@ namespace TestTask.Features.Weather.Presenter
                     UpdateLoading();
                 }
             }
+        }
+
+        private string FormatForecast(WeatherForecast forecast)
+        {
+            // Если API не прислал название периода, показываем хотя бы температуру.
+            if (string.IsNullOrWhiteSpace(forecast.PeriodName))
+                return $"{forecast.Temperature}{forecast.Unit}";
+
+            string periodName = WeatherPeriodNameTranslator.Translate(forecast.PeriodName);
+            return string.Format(_config.DisplayFormat, periodName, forecast.Temperature, forecast.Unit);
         }
 
         /// <summary>Индикатор нужен, только пока на экране ещё нет ни одного прогноза.</summary>

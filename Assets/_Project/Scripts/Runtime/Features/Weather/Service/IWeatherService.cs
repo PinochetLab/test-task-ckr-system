@@ -6,6 +6,7 @@ namespace TestTask.Features.Weather.Service
 {
     public interface IWeatherService
     {
-        UniTask<WeatherForecast> GetTodayAsync(CancellationToken cancellationToken);
+        /// <summary>Прогноз на ближайший период (первый в ответе API).</summary>
+        UniTask<WeatherForecast> GetCurrentAsync(CancellationToken cancellationToken);
     }
 }
