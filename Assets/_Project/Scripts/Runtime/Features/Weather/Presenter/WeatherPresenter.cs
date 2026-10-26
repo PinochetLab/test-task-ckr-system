@@ -7,13 +7,16 @@ using TestTask.Features.Weather.Config;
 using TestTask.Features.Weather.Data;
 using TestTask.Features.Weather.Service;
 using TestTask.Features.Weather.View;
+using UniRx;
 using UnityEngine;
 using Zenject;
 
 namespace TestTask.Features.Weather.Presenter
 {
     /// <summary>
-    /// Пока вкладка открыта, раз в N секунд запрашивает прогноз.
+    /// Пока вкладка открыта, каждые N секунд ставит в очередь запрос прогноза.
+    /// Таймер идёт с фиксированным шагом и не ждёт завершения предыдущего запроса и загрузки иконки,
+    /// поэтому период не «плывёт» от времени ответа сервера.
     /// При уходе с вкладки активный запрос отменяется, ожидающие — удаляются из очереди.
     /// </summary>
     public sealed class WeatherPresenter : ITabPresenter, IInitializable, IDisposable
@@ -26,6 +29,13 @@ namespace TestTask.Features.Weather.Presenter
         private readonly WeatherConfig _config;
 
         private CancellationTokenSource _cts;
+        private IDisposable _timer;
+
+        // Ответы могут прийти «внахлёст», показываем только самый свежий.
+        private int _lastRequestId;
+        private int _lastAppliedId;
+        private int _requestsInFlight;
+        private bool _hasData;
 
         public WeatherPresenter(WeatherView view, IWeatherService service, ISpriteLoader spriteLoader, WeatherConfig config)
         {
@@ -51,7 +61,17 @@ namespace TestTask.Features.Weather.Presenter
             _view.Show();
 
             _cts = new CancellationTokenSource();
-            PollAsync(_cts.Token).Forget();
+            _lastRequestId = 0;
+            _lastAppliedId = 0;
+            _requestsInFlight = 0;
+            _hasData = false;
+
+            CancellationToken token = _cts.Token;
+            var interval = TimeSpan.FromSeconds(_config.PollIntervalSeconds);
+
+            // Первый запрос сразу, дальше строго раз в interval. Время игры (timeScale) не влияет.
+            _timer = Observable.Timer(TimeSpan.Zero, interval, Scheduler.MainThreadIgnoreTimeScale)
+                .Subscribe(_ => RequestForecastAsync(token).Forget());
         }
 
         public void Exit()
@@ -65,45 +85,50 @@ namespace TestTask.Features.Weather.Presenter
             CancelPolling();
         }
 
-        private async UniTaskVoid PollAsync(CancellationToken cancellationToken)
+        private async UniTaskVoid RequestForecastAsync(CancellationToken cancellationToken)
         {
-            bool hasData = false;
-            var interval = TimeSpan.FromSeconds(_config.PollIntervalSeconds);
+            int requestId = ++_lastRequestId;
+            _requestsInFlight++;
+            UpdateLoading();
 
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                if (!hasData)
-                    _view.SetLoading(true);
+                WeatherForecast forecast = await _service.GetTodayAsync(cancellationToken);
+                Sprite icon = await LoadIconAsync(forecast.IconUrl, cancellationToken);
 
-                try
-                {
-                    WeatherForecast forecast = await _service.GetTodayAsync(cancellationToken);
-                    Sprite icon = await LoadIconAsync(forecast.IconUrl, cancellationToken);
-
-                    _view.SetForecast(icon, string.Format(_config.DisplayFormat, forecast.Temperature, forecast.Unit));
-                    hasData = true;
-                }
-                catch (OperationCanceledException)
-                {
+                // Более свежий запрос уже успел показать результат.
+                if (requestId < _lastAppliedId)
                     return;
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogWarning($"[Weather] {exception.Message}");
-                    _view.SetError(ErrorMessage);
-                }
-                finally
-                {
-                    if (!cancellationToken.IsCancellationRequested)
-                        _view.SetLoading(false);
-                }
 
-                bool cancelled = await UniTask.Delay(interval, cancellationToken: cancellationToken)
-                    .SuppressCancellationThrow();
-
-                if (cancelled)
-                    return;
+                _lastAppliedId = requestId;
+                _view.SetForecast(icon, string.Format(_config.DisplayFormat, forecast.Temperature, forecast.Unit));
+                _hasData = true;
             }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception exception)
+            {
+                Debug.LogWarning($"[Weather] {exception.Message}");
+
+                if (requestId > _lastAppliedId)
+                    _view.SetError(ErrorMessage);
+            }
+            finally
+            {
+                // После отмены счётчики уже сброшены новым заходом на вкладку — не трогаем их.
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    _requestsInFlight--;
+                    UpdateLoading();
+                }
+            }
+        }
+
+        /// <summary>Индикатор нужен, только пока на экране ещё нет ни одного прогноза.</summary>
+        private void UpdateLoading()
+        {
+            _view.SetLoading(!_hasData && _requestsInFlight > 0);
         }
 
         private async UniTask<Sprite> LoadIconAsync(string url, CancellationToken cancellationToken)
@@ -126,6 +151,9 @@ namespace TestTask.Features.Weather.Presenter
 
         private void CancelPolling()
         {
+            _timer?.Dispose();
+            _timer = null;
+
             if (_cts == null)
                 return;
 
