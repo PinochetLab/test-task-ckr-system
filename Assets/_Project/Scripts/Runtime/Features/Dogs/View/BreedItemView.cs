@@ -1,5 +1,6 @@
 using System;
 using TestTask.Core.UI;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +12,7 @@ namespace TestTask.Features.Dogs.View
     public sealed class BreedItemView : MonoBehaviour, IBreedItemView
     {
         [SerializeField] private Button _button;
-        [SerializeField] private Text _label;
+        [SerializeField] private TMP_Text _label;
         [SerializeField] private LoadingIndicatorView _loader;
 
         public IObservable<Unit> Clicked => _button.OnClickAsObservable();

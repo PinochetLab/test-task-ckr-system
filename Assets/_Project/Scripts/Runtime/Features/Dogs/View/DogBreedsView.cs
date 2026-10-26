@@ -1,13 +1,13 @@
 using TestTask.Core.UI;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace TestTask.Features.Dogs.View
 {
     public sealed class DogBreedsView : TabScreenView, IDogBreedsView
     {
         [SerializeField] private LoadingIndicatorView _loader;
-        [SerializeField] private Text _errorText;
+        [SerializeField] private TMP_Text _errorText;
 
         public void SetLoading(bool loading)
         {

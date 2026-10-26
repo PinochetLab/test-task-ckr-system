@@ -1,4 +1,5 @@
 using TestTask.Core.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,8 +8,8 @@ namespace TestTask.Features.Weather.View
     public sealed class WeatherView : TabScreenView, IWeatherView
     {
         [SerializeField] private Image _icon;
-        [SerializeField] private Text _forecastText;
-        [SerializeField] private Text _errorText;
+        [SerializeField] private TMP_Text _forecastText;
+        [SerializeField] private TMP_Text _errorText;
         [SerializeField] private LoadingIndicatorView _loader;
 
         public void ResetState()

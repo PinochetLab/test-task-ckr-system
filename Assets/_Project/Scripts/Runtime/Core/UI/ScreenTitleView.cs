@@ -1,15 +1,15 @@
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace TestTask.Core.UI
 {
     /// <summary>
     /// Заголовок экрана вкладки (префаб ScreenTitle).
     /// </summary>
-    [RequireComponent(typeof(Text))]
+    [RequireComponent(typeof(TextMeshProUGUI))]
     public sealed class ScreenTitleView : MonoBehaviour
     {
-        [SerializeField] private Text _text;
+        [SerializeField] private TMP_Text _text;
 
         public string Title
         {
@@ -19,7 +19,7 @@ namespace TestTask.Core.UI
 
         private void Reset()
         {
-            _text = GetComponent<Text>();
+            _text = GetComponent<TMP_Text>();
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using DG.Tweening;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,8 +17,8 @@ namespace TestTask.Features.Dogs.View
     {
         [SerializeField] private CanvasGroup _canvasGroup;
         [SerializeField] private RectTransform _panel;
-        [SerializeField] private Text _title;
-        [SerializeField] private Text _description;
+        [SerializeField] private TMP_Text _title;
+        [SerializeField] private TMP_Text _description;
         [SerializeField] private ScrollRect _descriptionScroll;
         [SerializeField] private Button _closeButton;
         [SerializeField] private Button _backgroundButton;
@@ -43,8 +44,8 @@ namespace TestTask.Features.Dogs.View
         private void Awake()
         {
             // Размер шрифта фиксированный: под длину текста подстраивается панель, а не шрифт.
-            _description.resizeTextForBestFit = false;
-            _description.verticalOverflow = VerticalWrapMode.Overflow;
+            _description.enableAutoSizing = false;
+            _description.overflowMode = TextOverflowModes.Overflow;
         }
 
         public void Show(string title, string description)

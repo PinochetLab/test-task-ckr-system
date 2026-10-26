@@ -1,5 +1,6 @@
 using System;
 using TestTask.Core.UI;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,8 +14,8 @@ namespace TestTask.Features.Clicker.View
     public sealed class ClickerView : TabScreenView, IClickerView
     {
         [SerializeField] private ClickTargetView _clickTarget;
-        [SerializeField] private Text _currencyText;
-        [SerializeField] private Text _energyText;
+        [SerializeField] private TMP_Text _currencyText;
+        [SerializeField] private TMP_Text _energyText;
         [SerializeField] private RectTransform _energyFill;
         [SerializeField] private Image _energyFillImage;
         [SerializeField] private Color _energyColor = new Color(0.25f, 0.55f, 0.95f);

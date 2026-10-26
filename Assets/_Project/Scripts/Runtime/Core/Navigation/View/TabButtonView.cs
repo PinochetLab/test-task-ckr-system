@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +11,7 @@ namespace TestTask.Core.Navigation.View
         [SerializeField] private TabId _id;
         [SerializeField] private Button _button;
         [SerializeField] private Image _background;
-        [SerializeField] private Text _label;
+        [SerializeField] private TMP_Text _label;
         [SerializeField] private Color _normalColor = new Color(0.22f, 0.22f, 0.26f);
         [SerializeField] private Color _selectedColor = new Color(0.25f, 0.55f, 0.95f);
         [SerializeField] private Color _normalTextColor = new Color(0.75f, 0.75f, 0.8f);
