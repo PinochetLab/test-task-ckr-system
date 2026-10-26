@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using TestTask.Features.Dogs.Config;
 using TestTask.Features.Dogs.Data;
 using TestTask.Features.Dogs.Presenter;
+using UnityEngine;
 
 namespace TestTask.Tests
 {
     public sealed class DogBreedsPresenterTests
     {
+        private DogsConfig _config;
         private FakeDogBreedsView _view;
         private FakeBreedPopupView _popup;
+        private FakeBreedItemFactory _items;
         private FakeDogBreedsService _service;
         private DogBreedsPresenter _presenter;
 
@@ -22,10 +26,12 @@ namespace TestTask.Tests
         [SetUp]
         public void SetUp()
         {
+            _config = ScriptableObject.CreateInstance<DogsConfig>();
             _view = new FakeDogBreedsView();
             _popup = new FakeBreedPopupView();
+            _items = new FakeBreedItemFactory();
             _service = new FakeDogBreedsService();
-            _presenter = new DogBreedsPresenter(_view, _popup, _service);
+            _presenter = new DogBreedsPresenter(_view, _popup, _items, _service, _config);
             _presenter.Initialize();
         }
 
@@ -33,6 +39,7 @@ namespace TestTask.Tests
         public void TearDown()
         {
             _presenter.Dispose();
+            UnityEngine.Object.DestroyImmediate(_config);
         }
 
         private void EnterWithBreeds()
@@ -40,6 +47,8 @@ namespace TestTask.Tests
             _presenter.Enter();
             _service.ListRequests[0].Source.TrySetResult(Breeds);
         }
+
+        private FakeBreedItemView Item(int index) => _items.Created[index];
 
         [Test]
         public void Initialize_HidesViewAndPopup()
@@ -50,7 +59,7 @@ namespace TestTask.Tests
         }
 
         [Test]
-        public void Enter_LoadsBreedList()
+        public void Enter_LoadsBreedList_AndBuildsNumberedItems()
         {
             _presenter.Enter();
 
@@ -59,35 +68,61 @@ namespace TestTask.Tests
 
             _service.ListRequests[0].Source.TrySetResult(Breeds);
 
-            Assert.AreSame(Breeds, _view.Breeds);
+            Assert.AreEqual(2, _items.Created.Count);
+            Assert.AreEqual(string.Format(_config.ItemFormat, 1, "Akita"), Item(0).Label);
+            Assert.AreEqual(string.Format(_config.ItemFormat, 2, "Beagle"), Item(1).Label);
             Assert.IsFalse(_view.IsLoading);
         }
 
         [Test]
-        public void ListError_ShowsErrorMessage()
+        public void ReEnter_ReturnsOldItemsToFactory()
+        {
+            EnterWithBreeds();
+            _presenter.Exit();
+
+            _presenter.Enter();
+
+            Assert.IsTrue(Item(0).IsDespawned);
+            Assert.IsTrue(Item(1).IsDespawned);
+        }
+
+        [Test]
+        public void ListError_ShowsErrorMessageFromConfig()
         {
             _presenter.Enter();
 
             _service.ListRequests[0].Source.TrySetException(new Exception("network down"));
 
-            Assert.AreEqual("Не удалось загрузить список пород", _view.ErrorText);
+            Assert.AreEqual(_config.ListErrorMessage, _view.ErrorText);
             Assert.IsFalse(_view.IsLoading);
         }
 
         [Test]
-        public void BreedClick_LoadsDetails_AndShowsPopup()
+        public void ItemClick_LoadsDetails_AndShowsPopup()
         {
             EnterWithBreeds();
 
-            _view.ClickBreed("a");
-            Assert.IsTrue(_view.ItemLoading["a"]);
+            Item(0).Click();
+            Assert.IsTrue(Item(0).IsLoading);
             Assert.AreEqual("a", _service.DetailsRequests[0].Id);
 
             _service.DetailsRequests[0].Source.TrySetResult(new BreedDetails("Akita", "Large dog"));
 
             Assert.IsTrue(_popup.IsOpen);
-            Assert.AreEqual("Akita", _popup.ShownDetails.Name);
-            Assert.IsFalse(_view.ItemLoading["a"]);
+            Assert.AreEqual("Akita", _popup.Title);
+            Assert.AreEqual("Large dog", _popup.Description);
+            Assert.IsFalse(Item(0).IsLoading);
+        }
+
+        [Test]
+        public void EmptyDescription_IsReplacedWithTextFromConfig()
+        {
+            EnterWithBreeds();
+
+            Item(0).Click();
+            _service.DetailsRequests[0].Source.TrySetResult(new BreedDetails("Akita", string.Empty));
+
+            Assert.AreEqual(_config.EmptyDescription, _popup.Description);
         }
 
         [Test]
@@ -95,33 +130,34 @@ namespace TestTask.Tests
         {
             EnterWithBreeds();
 
-            _view.ClickBreed("a");
-            _view.ClickBreed("b");
+            Item(0).Click();
+            Item(1).Click();
 
             Assert.IsTrue(_service.DetailsRequests[0].Token.IsCancellationRequested);
-            Assert.IsFalse(_view.ItemLoading["a"], "Спиннер у отменённой породы должен погаснуть");
+            Assert.IsFalse(Item(0).IsLoading, "Спиннер у отменённой породы должен погаснуть");
 
             _service.DetailsRequests[1].Source.TrySetResult(new BreedDetails("Beagle", "Hound"));
-            Assert.AreEqual("Beagle", _popup.ShownDetails.Name);
+            Assert.AreEqual("Beagle", _popup.Title);
         }
 
         [Test]
-        public void DetailsError_ShowsErrorPopup()
+        public void DetailsError_ShowsErrorPopupFromConfig()
         {
             EnterWithBreeds();
 
-            _view.ClickBreed("a");
+            Item(0).Click();
             _service.DetailsRequests[0].Source.TrySetException(new Exception("network down"));
 
             Assert.IsTrue(_popup.IsOpen);
-            Assert.AreEqual("Ошибка", _popup.ShownDetails.Name);
+            Assert.AreEqual(_config.DetailsErrorTitle, _popup.Title);
+            Assert.AreEqual(_config.DetailsErrorMessage, _popup.Description);
         }
 
         [Test]
         public void PopupCloseRequest_HidesPopup()
         {
             EnterWithBreeds();
-            _view.ClickBreed("a");
+            Item(0).Click();
             _service.DetailsRequests[0].Source.TrySetResult(new BreedDetails("Akita", "Large dog"));
 
             _popup.RequestClose();
@@ -134,7 +170,7 @@ namespace TestTask.Tests
         public void Exit_CancelsAllRequests_AndHidesPopup()
         {
             EnterWithBreeds();
-            _view.ClickBreed("a");
+            Item(0).Click();
 
             _presenter.Exit();
 

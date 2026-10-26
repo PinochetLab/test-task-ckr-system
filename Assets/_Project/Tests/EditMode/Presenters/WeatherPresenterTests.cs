@@ -90,7 +90,7 @@ namespace TestTask.Tests
 
             _service.Requests[0].Source.TrySetException(new Exception("network down"));
 
-            Assert.AreEqual("Не удалось загрузить погоду", _view.ErrorText);
+            Assert.AreEqual(_config.ErrorMessage, _view.ErrorText);
             Assert.IsFalse(_view.IsLoading);
         }
 

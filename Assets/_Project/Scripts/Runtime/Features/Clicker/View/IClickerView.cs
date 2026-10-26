@@ -8,9 +8,11 @@ namespace TestTask.Features.Clicker.View
     {
         IObservable<Unit> Clicked { get; }
 
-        void SetCurrency(long value);
+        void SetCurrency(string text);
 
-        void SetEnergy(int current, int max);
+        /// <param name="fill">Заполнение шкалы, 0..1.</param>
+        /// <param name="isLow">Энергии почти не осталось — шкала подсвечивается.</param>
+        void SetEnergy(string text, float fill, bool isLow);
 
         /// <summary>Фидбек успешного нажатия: «пульс» объекта и разлёт частиц.</summary>
         void PlayClickFeedback(int particleCount);

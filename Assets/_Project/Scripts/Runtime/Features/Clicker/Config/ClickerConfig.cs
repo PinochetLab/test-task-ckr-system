@@ -25,6 +25,14 @@ namespace TestTask.Features.Clicker.Config
         [SerializeField] private AudioClip _clickSound;
         [SerializeField, Range(0f, 1f)] private float _clickVolume = 0.6f;
 
+        [Header("Тексты")]
+        [Tooltip("{0} — количество валюты")]
+        [SerializeField] private string _currencyFormat = "Валюта: {0}";
+        [Tooltip("{0} — текущая энергия, {1} — максимум")]
+        [SerializeField] private string _energyFormat = "Энергия: {0} / {1}";
+        [Tooltip("Доля энергии, ниже которой шкала подсвечивается как почти пустая")]
+        [SerializeField, Range(0f, 1f)] private float _lowEnergyThreshold = 0.1f;
+
         public int CurrencyPerClick => _currencyPerClick;
         public int EnergyPerClick => _energyPerClick;
         public float AutoCollectInterval => _autoCollectInterval;
@@ -37,5 +45,8 @@ namespace TestTask.Features.Clicker.Config
         public int ClickParticlesCount => _clickParticlesCount;
         public AudioClip ClickSound => _clickSound;
         public float ClickVolume => _clickVolume;
+        public string CurrencyFormat => _currencyFormat;
+        public string EnergyFormat => _energyFormat;
+        public float LowEnergyThreshold => _lowEnergyThreshold;
     }
 }

@@ -43,15 +43,29 @@ namespace TestTask.Tests
             _presenter.Initialize();
         }
 
+        private string Currency(long value) => string.Format(_config.CurrencyFormat, value);
+
+        private string Energy(int value) => string.Format(_config.EnergyFormat, value, MaxEnergy);
+
         [Test]
         public void Initialize_HidesViewAndShowsModelState()
         {
             CreatePresenter(startEnergy: 7);
 
             Assert.IsFalse(_view.IsVisible);
-            Assert.AreEqual(0, _view.Currency);
-            Assert.AreEqual(7, _view.Energy);
-            Assert.AreEqual(MaxEnergy, _view.MaxEnergy);
+            Assert.AreEqual(Currency(0), _view.CurrencyText);
+            Assert.AreEqual(Energy(7), _view.EnergyText);
+            Assert.AreEqual(0.7f, _view.EnergyFill, 0.0001f);
+            Assert.IsFalse(_view.IsEnergyLow);
+        }
+
+        [Test]
+        public void Energy_AtOrBelowThreshold_IsMarkedLow()
+        {
+            CreatePresenter(startEnergy: 1);
+
+            Assert.AreEqual(0.1f, _view.EnergyFill, 0.0001f);
+            Assert.IsTrue(_view.IsEnergyLow);
         }
 
         [Test]
@@ -74,8 +88,8 @@ namespace TestTask.Tests
 
             _view.Click();
 
-            Assert.AreEqual(_config.CurrencyPerClick, _view.Currency);
-            Assert.AreEqual(MaxEnergy - _config.EnergyPerClick, _view.Energy);
+            Assert.AreEqual(Currency(_config.CurrencyPerClick), _view.CurrencyText);
+            Assert.AreEqual(Energy(MaxEnergy - _config.EnergyPerClick), _view.EnergyText);
             Assert.AreEqual(1, _view.FeedbackCount);
             Assert.AreEqual(_config.ClickParticlesCount, _view.LastParticleCount);
             Assert.AreEqual(1, _effects.SoundCount);
@@ -90,7 +104,7 @@ namespace TestTask.Tests
 
             _view.Click();
 
-            Assert.AreEqual(0, _view.Currency);
+            Assert.AreEqual(Currency(0), _view.CurrencyText);
             Assert.AreEqual(1, _view.DeniedCount);
             Assert.AreEqual(0, _view.FeedbackCount);
             Assert.AreEqual(0, _effects.SoundCount);

@@ -43,11 +43,11 @@ namespace TestTask.Features.Clicker.Presenter
             _view.Hide();
 
             _model.Currency
-                .Subscribe(_view.SetCurrency)
+                .Subscribe(currency => _view.SetCurrency(string.Format(_config.CurrencyFormat, currency)))
                 .AddTo(_disposables);
 
             _model.Energy
-                .Subscribe(energy => _view.SetEnergy(energy, _model.MaxEnergy))
+                .Subscribe(ShowEnergy)
                 .AddTo(_disposables);
 
             _view.Clicked
@@ -75,6 +75,15 @@ namespace TestTask.Features.Clicker.Presenter
         public void Dispose()
         {
             _disposables.Dispose();
+        }
+
+        private void ShowEnergy(int energy)
+        {
+            int max = _model.MaxEnergy;
+            float fill = max > 0 ? (float)energy / max : 0f;
+            string text = string.Format(_config.EnergyFormat, energy, max);
+
+            _view.SetEnergy(text, fill, fill <= _config.LowEnergyThreshold);
         }
 
         private void OnClicked()

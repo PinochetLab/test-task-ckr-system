@@ -1,6 +1,5 @@
 using System;
 using DG.Tweening;
-using TestTask.Features.Dogs.Data;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -48,10 +47,10 @@ namespace TestTask.Features.Dogs.View
             _description.verticalOverflow = VerticalWrapMode.Overflow;
         }
 
-        public void Show(BreedDetails details)
+        public void Show(string title, string description)
         {
-            _title.text = details.Name;
-            _description.text = string.IsNullOrEmpty(details.Description) ? "Описание отсутствует" : details.Description;
+            _title.text = title;
+            _description.text = description;
 
             KillAnimation();
             gameObject.SetActive(true);

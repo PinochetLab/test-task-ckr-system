@@ -12,9 +12,10 @@ namespace TestTask.Tests
 
         public IObservable<Unit> Clicked => _clicked;
         public bool IsVisible { get; private set; } = true;
-        public long Currency { get; private set; } = -1;
-        public int Energy { get; private set; } = -1;
-        public int MaxEnergy { get; private set; } = -1;
+        public string CurrencyText { get; private set; }
+        public string EnergyText { get; private set; }
+        public float EnergyFill { get; private set; } = -1f;
+        public bool IsEnergyLow { get; private set; }
         public int FeedbackCount { get; private set; }
         public int LastParticleCount { get; private set; }
         public int DeniedCount { get; private set; }
@@ -23,12 +24,13 @@ namespace TestTask.Tests
 
         public void Show() => IsVisible = true;
         public void Hide() => IsVisible = false;
-        public void SetCurrency(long value) => Currency = value;
+        public void SetCurrency(string text) => CurrencyText = text;
 
-        public void SetEnergy(int current, int max)
+        public void SetEnergy(string text, float fill, bool isLow)
         {
-            Energy = current;
-            MaxEnergy = max;
+            EnergyText = text;
+            EnergyFill = fill;
+            IsEnergyLow = isLow;
         }
 
         public void PlayClickFeedback(int particleCount)

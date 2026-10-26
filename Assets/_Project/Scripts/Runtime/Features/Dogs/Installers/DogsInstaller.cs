@@ -24,6 +24,8 @@ namespace TestTask.Features.Dogs.Installers
                 .FromComponentInNewPrefab(_itemPrefab)
                 .UnderTransform(_listContent);
 
+            Container.BindInterfacesTo<BreedItemFactory>().AsSingle();
+
             Container.BindInterfacesTo<DogBreedsService>().AsSingle();
             Container.BindInterfacesAndSelfTo<DogBreedsPresenter>().AsSingle();
         }

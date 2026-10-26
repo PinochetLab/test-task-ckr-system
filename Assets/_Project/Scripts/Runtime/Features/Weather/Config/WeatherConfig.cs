@@ -13,6 +13,9 @@ namespace TestTask.Features.Weather.Config
 
         public string ForecastUrl => _forecastUrl;
         public float PollIntervalSeconds => _pollIntervalSeconds;
+        [SerializeField] private string _errorMessage = "Не удалось загрузить погоду";
+
         public string DisplayFormat => _displayFormat;
+        public string ErrorMessage => _errorMessage;
     }
 }

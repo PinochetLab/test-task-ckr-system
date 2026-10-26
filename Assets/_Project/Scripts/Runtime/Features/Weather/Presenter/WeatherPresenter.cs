@@ -21,8 +21,6 @@ namespace TestTask.Features.Weather.Presenter
     /// </summary>
     public sealed class WeatherPresenter : ITabPresenter, IInitializable, IDisposable
     {
-        private const string ErrorMessage = "Не удалось загрузить погоду";
-
         // Один запрос выполняется и один ждёт в очереди. Если сеть отвечает дольше интервала
         // (например, без интернета запрос висит до таймаута), новые тики пропускаются,
         // чтобы очередь не копила одинаковые запросы.
@@ -134,7 +132,7 @@ namespace TestTask.Features.Weather.Presenter
 
                 if (requestId > _lastAppliedId)
                 {
-                    _view.SetError(ErrorMessage);
+                    _view.SetError(_config.ErrorMessage);
                     _hasResult = true;
                 }
             }

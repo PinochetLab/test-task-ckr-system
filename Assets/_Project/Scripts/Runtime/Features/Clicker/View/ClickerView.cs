@@ -34,18 +34,16 @@ namespace TestTask.Features.Clicker.View
             _clickTarget.SetVisible(false);
         }
 
-        public void SetCurrency(long value)
+        public void SetCurrency(string text)
         {
-            _currencyText.text = $"Валюта: {value}";
+            _currencyText.text = text;
         }
 
-        public void SetEnergy(int current, int max)
+        public void SetEnergy(string text, float fill, bool isLow)
         {
-            float ratio = max > 0 ? Mathf.Clamp01((float)current / max) : 0f;
-
-            _energyText.text = $"Энергия: {current} / {max}";
-            _energyFill.anchorMax = new Vector2(ratio, 1f);
-            _energyFillImage.color = ratio > 0.1f ? _energyColor : _energyEmptyColor;
+            _energyText.text = text;
+            _energyFill.anchorMax = new Vector2(Mathf.Clamp01(fill), 1f);
+            _energyFillImage.color = isLow ? _energyEmptyColor : _energyColor;
         }
 
         public void PlayClickFeedback(int particleCount)

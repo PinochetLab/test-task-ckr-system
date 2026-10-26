@@ -1,5 +1,4 @@
 using System;
-using TestTask.Features.Dogs.Data;
 using UniRx;
 
 namespace TestTask.Features.Dogs.View
@@ -10,7 +9,7 @@ namespace TestTask.Features.Dogs.View
 
         bool IsOpen { get; }
 
-        void Show(BreedDetails details);
+        void Show(string title, string description);
 
         void Hide();
 

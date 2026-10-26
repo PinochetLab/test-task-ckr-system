@@ -11,45 +11,43 @@ namespace TestTask.Tests
 {
     internal sealed class FakeDogBreedsView : IDogBreedsView
     {
-        private readonly Subject<string> _breedClicked = new Subject<string>();
-
-        public IObservable<string> BreedClicked => _breedClicked;
         public bool IsVisible { get; private set; } = true;
         public bool IsLoading { get; private set; }
         public string ErrorText { get; private set; }
-        public IReadOnlyList<BreedInfo> Breeds { get; private set; }
-        public Dictionary<string, bool> ItemLoading { get; } = new Dictionary<string, bool>();
-
-        public void ClickBreed(string id) => _breedClicked.OnNext(id);
 
         public void Show() => IsVisible = true;
         public void Hide() => IsVisible = false;
+        public void SetLoading(bool loading) => IsLoading = loading;
+        public void SetError(string message) => ErrorText = message;
+    }
 
-        public void Clear()
+    internal sealed class FakeBreedItemView : IBreedItemView
+    {
+        private readonly Subject<Unit> _clicked = new Subject<Unit>();
+
+        public IObservable<Unit> Clicked => _clicked;
+        public string Label { get; private set; }
+        public bool IsLoading { get; private set; }
+        public bool IsDespawned { get; set; }
+
+        public void Click() => _clicked.OnNext(Unit.Default);
+        public void SetLabel(string text) => Label = text;
+        public void SetLoading(bool loading) => IsLoading = loading;
+    }
+
+    internal sealed class FakeBreedItemFactory : IBreedItemFactory
+    {
+        /// <summary>Все когда-либо созданные строки, по порядку.</summary>
+        public List<FakeBreedItemView> Created { get; } = new List<FakeBreedItemView>();
+
+        public IBreedItemView Spawn()
         {
-            Breeds = null;
-            ErrorText = null;
+            var item = new FakeBreedItemView();
+            Created.Add(item);
+            return item;
         }
 
-        public void SetLoading(bool loading)
-        {
-            IsLoading = loading;
-        }
-
-        public void SetError(string message)
-        {
-            ErrorText = message;
-        }
-
-        public void SetBreeds(IReadOnlyList<BreedInfo> breeds)
-        {
-            Breeds = breeds;
-        }
-
-        public void SetItemLoading(string breedId, bool loading)
-        {
-            ItemLoading[breedId] = loading;
-        }
+        public void Despawn(IBreedItemView item) => ((FakeBreedItemView)item).IsDespawned = true;
     }
 
     internal sealed class FakeBreedPopupView : IBreedPopupView
@@ -58,15 +56,17 @@ namespace TestTask.Tests
 
         public IObservable<Unit> CloseRequested => _closeRequested;
         public bool IsOpen { get; private set; }
-        public BreedDetails ShownDetails { get; private set; }
+        public string Title { get; private set; }
+        public string Description { get; private set; }
         public int HideCount { get; private set; }
         public int HideImmediateCount { get; private set; }
 
         public void RequestClose() => _closeRequested.OnNext(Unit.Default);
 
-        public void Show(BreedDetails details)
+        public void Show(string title, string description)
         {
-            ShownDetails = details;
+            Title = title;
+            Description = description;
             IsOpen = true;
         }
 
