@@ -23,6 +23,11 @@ namespace TestTask.Features.Weather.Presenter
     {
         private const string ErrorMessage = "Не удалось загрузить погоду";
 
+        // Один запрос выполняется и один ждёт в очереди. Если сеть отвечает дольше интервала
+        // (например, без интернета запрос висит до таймаута), новые тики пропускаются,
+        // чтобы очередь не копила одинаковые запросы.
+        private const int MaxRequestsInFlight = 2;
+
         private readonly WeatherView _view;
         private readonly IWeatherService _service;
         private readonly ISpriteLoader _spriteLoader;
@@ -35,7 +40,7 @@ namespace TestTask.Features.Weather.Presenter
         private int _lastRequestId;
         private int _lastAppliedId;
         private int _requestsInFlight;
-        private bool _hasData;
+        private bool _hasResult;
 
         public WeatherPresenter(WeatherView view, IWeatherService service, ISpriteLoader spriteLoader, WeatherConfig config)
         {
@@ -64,14 +69,14 @@ namespace TestTask.Features.Weather.Presenter
             _lastRequestId = 0;
             _lastAppliedId = 0;
             _requestsInFlight = 0;
-            _hasData = false;
+            _hasResult = false;
 
             CancellationToken token = _cts.Token;
             var interval = TimeSpan.FromSeconds(_config.PollIntervalSeconds);
 
             // Первый запрос сразу, дальше строго раз в interval. Время игры (timeScale) не влияет.
             _timer = Observable.Timer(TimeSpan.Zero, interval, Scheduler.MainThreadIgnoreTimeScale)
-                .Subscribe(_ => RequestForecastAsync(token).Forget());
+                .Subscribe(_ => OnTick(token));
         }
 
         public void Exit()
@@ -83,6 +88,14 @@ namespace TestTask.Features.Weather.Presenter
         public void Dispose()
         {
             CancelPolling();
+        }
+
+        private void OnTick(CancellationToken cancellationToken)
+        {
+            if (_requestsInFlight >= MaxRequestsInFlight)
+                return;
+
+            RequestForecastAsync(cancellationToken).Forget();
         }
 
         private async UniTaskVoid RequestForecastAsync(CancellationToken cancellationToken)
@@ -102,7 +115,7 @@ namespace TestTask.Features.Weather.Presenter
 
                 _lastAppliedId = requestId;
                 _view.SetForecast(icon, FormatForecast(forecast));
-                _hasData = true;
+                _hasResult = true;
             }
             catch (OperationCanceledException)
             {
@@ -112,7 +125,10 @@ namespace TestTask.Features.Weather.Presenter
                 Debug.LogWarning($"[Weather] {exception.Message}");
 
                 if (requestId > _lastAppliedId)
+                {
                     _view.SetError(ErrorMessage);
+                    _hasResult = true;
+                }
             }
             finally
             {
@@ -135,10 +151,13 @@ namespace TestTask.Features.Weather.Presenter
             return string.Format(_config.DisplayFormat, periodName, forecast.Temperature, forecast.Unit);
         }
 
-        /// <summary>Индикатор нужен, только пока на экране ещё нет ни одного прогноза.</summary>
+        /// <summary>
+        /// Индикатор нужен только до первого результата — прогноза или ошибки.
+        /// Иначе при запросах «внахлёст» он не гас бы никогда.
+        /// </summary>
         private void UpdateLoading()
         {
-            _view.SetLoading(!_hasData && _requestsInFlight > 0);
+            _view.SetLoading(!_hasResult && _requestsInFlight > 0);
         }
 
         private async UniTask<Sprite> LoadIconAsync(string url, CancellationToken cancellationToken)

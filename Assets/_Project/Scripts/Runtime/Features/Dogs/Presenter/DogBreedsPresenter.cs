@@ -99,7 +99,9 @@ namespace TestTask.Features.Dogs.Presenter
             }
             finally
             {
-                _view.SetLoading(false);
+                // После отмены вкладка закрыта или сцена уже выгружается — view трогать нельзя.
+                if (!cancellationToken.IsCancellationRequested)
+                    _view.SetLoading(false);
             }
         }
 
@@ -110,10 +112,10 @@ namespace TestTask.Features.Dogs.Presenter
 
             CancelBreedRequest();
             _breedCts = CancellationTokenSource.CreateLinkedTokenSource(_tabCts.Token);
-            LoadBreedAsync(breedId, _breedCts.Token).Forget();
+            LoadBreedAsync(breedId, _breedCts.Token, _tabCts.Token).Forget();
         }
 
-        private async UniTaskVoid LoadBreedAsync(string breedId, CancellationToken cancellationToken)
+        private async UniTaskVoid LoadBreedAsync(string breedId, CancellationToken cancellationToken, CancellationToken tabToken)
         {
             _view.SetItemLoading(breedId, true);
 
@@ -133,7 +135,10 @@ namespace TestTask.Features.Dogs.Presenter
             }
             finally
             {
-                _view.SetItemLoading(breedId, false);
+                // Клик по другой породе отменяет этот запрос, но view жив — спиннер у пункта гасим.
+                // А после ухода с вкладки или выгрузки сцены view трогать нельзя.
+                if (!tabToken.IsCancellationRequested)
+                    _view.SetItemLoading(breedId, false);
             }
         }
 

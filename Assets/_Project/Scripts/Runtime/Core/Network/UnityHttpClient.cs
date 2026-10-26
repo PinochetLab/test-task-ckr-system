@@ -6,7 +6,8 @@ using UnityEngine.Networking;
 namespace TestTask.Core.Network
 {
     /// <summary>
-    /// HTTP-клиент на UnityWebRequest. При отмене токена запрос прерывается (Abort).
+    /// HTTP-клиент на UnityWebRequest. При отмене токена запрос прерывается (Abort),
+    /// а request уничтожается только после того, как Unity завершила операцию.
     /// </summary>
     public sealed class UnityHttpClient : IHttpClient
     {
@@ -44,17 +45,41 @@ namespace TestTask.Core.Network
                 request.SetRequestHeader("User-Agent", _config.UserAgent);
         }
 
+        /// <summary>
+        /// Отправляет запрос и ждёт его настоящего завершения.
+        /// Отмену обрабатываем сами: по токену вызываем Abort, но продолжаем ждать операцию,
+        /// пока Unity её не закроет. С cancelImmediately UniTask завершал ожидание сразу,
+        /// request уничтожался через using, а на следующем кадре UniTask снова вызывал Abort()
+        /// у уже уничтоженного request — отсюда NullReferenceException в UnityWebRequest.Abort.
+        /// Заодно очередь не запускает следующий запрос, пока прерванный реально не остановился.
+        /// </summary>
         private static async UniTask SendAsync(UnityWebRequest request, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+
             try
             {
-                // При отмене токена UniTask сразу вызывает request.Abort().
-                await request.SendWebRequest().ToUniTask(cancellationToken: cancellationToken, cancelImmediately: true);
+                using (cancellationToken.Register(() => AbortIfRunning(request, operation)))
+                    await operation;
             }
             catch (UnityWebRequestException exception)
             {
+                // Прерванный по нашей отмене запрос — это отмена, а не сетевая ошибка.
+                if (cancellationToken.IsCancellationRequested)
+                    throw new System.OperationCanceledException(cancellationToken);
+
                 throw new HttpRequestException(request.url, exception.ResponseCode, exception.Error);
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        private static void AbortIfRunning(UnityWebRequest request, UnityWebRequestAsyncOperation operation)
+        {
+            if (!operation.isDone)
+                request.Abort();
         }
     }
 }
