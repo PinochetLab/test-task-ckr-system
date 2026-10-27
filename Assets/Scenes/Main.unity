@@ -5291,6 +5291,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TestTask.Runtime::TestTask.Features.Clicker.Installers.ClickerInstaller
   _view: {fileID: 2017553411}
+  _rewardPrefab: {fileID: 1000000000000003, guid: b037c21fcba540ebbb76d1747b105ffa, type: 3}
+  _rewardLayer: {fileID: 1990000002}
+  _rewardPoolSize: 4
 --- !u!114 &257825715
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9041,9 +9044,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 632faa0fa4e147faa052422ad1ef6745, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TestTask.Runtime::TestTask.Features.Clicker.Effects.RewardFlyEffect
-  _prefab: {fileID: 1000000000000003, guid: b037c21fcba540ebbb76d1747b105ffa, type: 3}
   _target: {fileID: 1861451175}
-  _spawnSpread: 40
   _targetPunch: 0.25
   _targetPunchDuration: 0.2
 --- !u!1 &2017553409

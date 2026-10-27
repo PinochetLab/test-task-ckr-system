@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using Zenject;
 
 namespace TestTask.Features.Clicker.Effects
 {
@@ -51,6 +52,22 @@ namespace TestTask.Features.Clicker.Effects
         {
             _sequence?.Kill();
             _sequence = null;
+        }
+
+        /// <summary>Пул наград. MonoMemoryPool сам включает объект при выдаче и выключает при возврате.</summary>
+        public sealed class Pool : MonoMemoryPool<RewardFlyView>
+        {
+            protected override void OnSpawned(RewardFlyView item)
+            {
+                base.OnSpawned(item);
+                item.transform.SetAsLastSibling(); // новая награда рисуется поверх предыдущих
+            }
+
+            protected override void OnDespawned(RewardFlyView item)
+            {
+                item.Kill();
+                base.OnDespawned(item);
+            }
         }
     }
 }
