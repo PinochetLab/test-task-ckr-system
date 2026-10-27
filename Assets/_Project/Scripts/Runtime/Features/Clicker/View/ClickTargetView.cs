@@ -40,8 +40,10 @@ namespace TestTask.Features.Clicker.View
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (eventData.button == PointerEventData.InputButton.Left)
-                _clicked.OnNext(Unit.Default);
+            if (eventData.button != PointerEventData.InputButton.Left)
+                return;
+
+            _clicked.OnNext(Unit.Default);
         }
 
         private void OnDestroy()

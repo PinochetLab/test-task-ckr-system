@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TestTask.Features.Clicker.Effects;
 using TestTask.Features.Clicker.Logic;
 using TestTask.Features.Clicker.View;
@@ -19,6 +20,7 @@ namespace TestTask.Tests
         public int FeedbackCount { get; private set; }
         public int LastParticleCount { get; private set; }
         public int DeniedCount { get; private set; }
+        public List<string> PointerRewards { get; } = new List<string>();
 
         public void Click() => _clicked.OnNext(Unit.Default);
 
@@ -38,6 +40,11 @@ namespace TestTask.Tests
             FeedbackCount++;
             LastParticleCount = particleCount;
         }
+
+        public List<string> CenterRewards { get; } = new List<string>();
+
+        public void ShowRewardAtPointer(string text) => PointerRewards.Add(text);
+        public void ShowRewardAtCenter(string text) => CenterRewards.Add(text);
 
         public void PlayDenied() => DeniedCount++;
     }

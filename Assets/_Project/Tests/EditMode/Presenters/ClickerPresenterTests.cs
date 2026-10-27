@@ -45,6 +45,8 @@ namespace TestTask.Tests
 
         private string Currency(long value) => string.Format(_config.CurrencyFormat, value);
 
+        private string Reward(int value) => string.Format(_config.RewardFormat, value);
+
         private string Energy(int value) => string.Format(_config.EnergyFormat, value, MaxEnergy);
 
         [Test]
@@ -94,6 +96,7 @@ namespace TestTask.Tests
             Assert.AreEqual(_config.ClickParticlesCount, _view.LastParticleCount);
             Assert.AreEqual(1, _effects.SoundCount);
             Assert.AreEqual(0, _view.DeniedCount);
+            CollectionAssert.AreEqual(new[] { Reward(_config.CurrencyPerClick) }, _view.PointerRewards);
         }
 
         [Test]
@@ -108,6 +111,7 @@ namespace TestTask.Tests
             Assert.AreEqual(1, _view.DeniedCount);
             Assert.AreEqual(0, _view.FeedbackCount);
             Assert.AreEqual(0, _effects.SoundCount);
+            Assert.IsEmpty(_view.PointerRewards);
         }
 
         [Test]
@@ -121,6 +125,8 @@ namespace TestTask.Tests
             Assert.AreEqual(1, _view.FeedbackCount);
             Assert.AreEqual(_config.ClickParticlesCount, _view.LastParticleCount);
             Assert.AreEqual(1, _effects.SoundCount);
+            CollectionAssert.IsEmpty(_view.PointerRewards, "У автосбора клика нет — награда не у курсора");
+            CollectionAssert.AreEqual(new[] { Reward(_config.AutoCollectReward) }, _view.CenterRewards);
         }
 
         [Test]
@@ -132,6 +138,7 @@ namespace TestTask.Tests
 
             Assert.AreEqual(0, _view.FeedbackCount);
             Assert.AreEqual(0, _effects.SoundCount);
+            CollectionAssert.IsEmpty(_view.CenterRewards);
         }
 
         [Test]

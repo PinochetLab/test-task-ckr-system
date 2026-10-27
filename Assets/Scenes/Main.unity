@@ -8993,6 +8993,59 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &1990000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1990000002}
+  - component: {fileID: 1990000003}
+  m_Layer: 5
+  m_Name: RewardLayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1990000002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990000001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2017553410}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1990000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 632faa0fa4e147faa052422ad1ef6745, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TestTask.Runtime::TestTask.Features.Clicker.Effects.RewardFlyEffect
+  _prefab: {fileID: 1000000000000003, guid: b037c21fcba540ebbb76d1747b105ffa, type: 3}
+  _target: {fileID: 1861451175}
+  _spawnSpread: 40
+  _targetPunch: 0.25
+  _targetPunchDuration: 0.2
 --- !u!1 &2017553409
 GameObject:
   m_ObjectHideFlags: 0
@@ -9026,6 +9079,7 @@ RectTransform:
   - {fileID: 689393930}
   - {fileID: 2088357792}
   - {fileID: 61712460}
+  - {fileID: 1990000002}
   m_Father: {fileID: 381713587}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -9046,6 +9100,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: TestTask.Runtime::TestTask.Features.Clicker.View.ClickerView
   _clickTarget: {fileID: 2022185392}
+  _rewardEffect: {fileID: 1990000003}
+  _worldCamera: {fileID: 519420031}
   _currencyText: {fileID: 2088357793}
   _energyText: {fileID: 393260293}
   _energyFill: {fileID: 52605122}

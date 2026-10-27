@@ -1,8 +1,10 @@
 using System;
 using TestTask.Core.UI;
+using TestTask.Features.Clicker.Effects;
 using TMPro;
 using UniRx;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace TestTask.Features.Clicker.View
@@ -14,6 +16,8 @@ namespace TestTask.Features.Clicker.View
     public sealed class ClickerView : TabScreenView, IClickerView
     {
         [SerializeField] private ClickTargetView _clickTarget;
+        [SerializeField] private RewardFlyEffect _rewardEffect;
+        [SerializeField] private Camera _worldCamera;
         [SerializeField] private TMP_Text _currencyText;
         [SerializeField] private TMP_Text _energyText;
         [SerializeField] private RectTransform _energyFill;
@@ -54,6 +58,28 @@ namespace TestTask.Features.Clicker.View
             ParticleSystem particles = _clickTarget.Burst;
             if (particles != null && particleCount > 0)
                 particles.Emit(particleCount);
+        }
+
+        // Награда живёт в UI. У Overlay Canvas мировые координаты UI совпадают с пикселями экрана,
+        // поэтому позицию курсора можно отдать как есть, а центр объекта на сцене — перевести через камеру.
+
+        public void ShowRewardAtPointer(string text)
+        {
+            Pointer pointer = Pointer.current; // мышь, а на телефоне — палец
+            if (pointer == null)
+            {
+                ShowRewardAtCenter(text);
+                return;
+            }
+
+            _rewardEffect.Play(text, pointer.position.ReadValue(), aboveFrom: true);
+        }
+
+        public void ShowRewardAtCenter(string text)
+        {
+            Camera worldCamera = _worldCamera != null ? _worldCamera : Camera.main;
+            Vector3 center = worldCamera.WorldToScreenPoint(_clickTarget.transform.position);
+            _rewardEffect.Play(text, center, aboveFrom: false);
         }
 
         public void PlayDenied()

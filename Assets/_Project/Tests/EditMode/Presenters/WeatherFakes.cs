@@ -14,7 +14,9 @@ namespace TestTask.Tests
         public bool IsVisible { get; private set; } = true;
         public bool IsLoading { get; private set; }
         public string ForecastText { get; private set; }
-        public string ErrorText { get; private set; }
+        public bool IsStale { get; private set; }
+        public string StatusText { get; private set; }
+        public bool IsStatusError { get; private set; }
         public int ResetCount { get; private set; }
 
         public void Show() => IsVisible = true;
@@ -25,7 +27,9 @@ namespace TestTask.Tests
             ResetCount++;
             IsLoading = false;
             ForecastText = null;
-            ErrorText = null;
+            IsStale = false;
+            StatusText = null;
+            IsStatusError = false;
         }
 
         public void SetLoading(bool loading) => IsLoading = loading;
@@ -33,10 +37,16 @@ namespace TestTask.Tests
         public void SetForecast(Sprite icon, string text)
         {
             ForecastText = text;
-            ErrorText = null;
+            IsStale = false;
         }
 
-        public void SetError(string message) => ErrorText = message;
+        public void SetForecastStale(bool stale) => IsStale = stale;
+
+        public void SetStatus(string text, bool isError)
+        {
+            StatusText = text;
+            IsStatusError = isError;
+        }
     }
 
     /// <summary>Каждый запрос висит, пока тест сам не завершит его через Source.</summary>

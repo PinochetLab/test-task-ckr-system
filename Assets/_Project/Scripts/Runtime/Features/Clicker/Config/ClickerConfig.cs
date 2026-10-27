@@ -30,6 +30,8 @@ namespace TestTask.Features.Clicker.Config
         [SerializeField] private string _currencyFormat = "Валюта: {0}";
         [Tooltip("{0} — текущая энергия, {1} — максимум")]
         [SerializeField] private string _energyFormat = "Энергия: {0} / {1}";
+        [Tooltip("{0} — сколько валюты начислено; текст вылетающей награды")]
+        [SerializeField] private string _rewardFormat = "+{0}";
         [Tooltip("Доля энергии, ниже которой шкала подсвечивается как почти пустая")]
         [SerializeField, Range(0f, 1f)] private float _lowEnergyThreshold = 0.1f;
 
@@ -47,6 +49,7 @@ namespace TestTask.Features.Clicker.Config
         public float ClickVolume => _clickVolume;
         public string CurrencyFormat => _currencyFormat;
         public string EnergyFormat => _energyFormat;
+        public string RewardFormat => _rewardFormat;
         public float LowEnergyThreshold => _lowEnergyThreshold;
     }
 }

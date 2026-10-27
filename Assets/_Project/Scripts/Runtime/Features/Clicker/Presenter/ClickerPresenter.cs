@@ -54,11 +54,16 @@ namespace TestTask.Features.Clicker.Presenter
                 .Subscribe(_ => OnClicked())
                 .AddTo(_disposables);
 
-            // Автосбор — это «кнопка нажалась сама»: тот же фидбек, что и при ручном клике.
+            // Автосбор — это «кнопка нажалась сама»: те же эффекты, что и при клике.
+            // Клика нет, поэтому награда вылетает из центра объекта, а не из-под курсора.
             // Эффекты показываем только на открытой вкладке, начисление идёт всегда.
             _autoCollect.AutoCollected
                 .Where(_ => _view.IsVisible)
-                .Subscribe(_ => PlayPressEffects())
+                .Subscribe(_ =>
+                {
+                    PlayPressEffects();
+                    _view.ShowRewardAtCenter(FormatReward(_config.AutoCollectReward));
+                })
                 .AddTo(_disposables);
         }
 
@@ -88,13 +93,19 @@ namespace TestTask.Features.Clicker.Presenter
 
         private void OnClicked()
         {
-            if (_rules.TryClick())
-                PlayPressEffects();
-            else
+            if (!_rules.TryClick())
+            {
                 _view.PlayDenied();
+                return;
+            }
+
+            PlayPressEffects();
+            _view.ShowRewardAtPointer(FormatReward(_config.CurrencyPerClick));
         }
 
-        /// <summary>Полный набор эффектов нажатия: анимация, частицы, звук.</summary>
+        private string FormatReward(int reward) => string.Format(_config.RewardFormat, reward);
+
+        /// <summary>Эффекты нажатия: анимация, частицы, звук.</summary>
         private void PlayPressEffects()
         {
             _view.PlayClickFeedback(_config.ClickParticlesCount);

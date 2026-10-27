@@ -40,6 +40,8 @@ namespace TestTask.Features.Weather.Presenter
         private int _lastAppliedId;
         private int _requestsInFlight;
         private bool _hasResult;
+        private bool _hasForecast;
+        private DateTimeOffset _forecastReceivedAt;
 
         /// <param name="scheduler">Планировщик таймера опроса. В игре — главный поток без учёта timeScale, в тестах — ручной.</param>
         public WeatherPresenter(
@@ -76,6 +78,7 @@ namespace TestTask.Features.Weather.Presenter
             _lastAppliedId = 0;
             _requestsInFlight = 0;
             _hasResult = false;
+            _hasForecast = false;
 
             CancellationToken token = _cts.Token;
             var interval = TimeSpan.FromSeconds(_config.PollIntervalSeconds);
@@ -110,6 +113,10 @@ namespace TestTask.Features.Weather.Presenter
             _requestsInFlight++;
             UpdateLoading();
 
+            // Повторный опрос: прогноз на экране, крупный индикатор уже не нужен — показываем статус.
+            if (_hasForecast)
+                _view.SetStatus(_config.UpdatingStatus, false);
+
             try
             {
                 WeatherForecast forecast = await _service.GetCurrentAsync(cancellationToken);
@@ -120,7 +127,10 @@ namespace TestTask.Features.Weather.Presenter
                     return;
 
                 _lastAppliedId = requestId;
+                _forecastReceivedAt = _scheduler.Now.ToLocalTime();
                 _view.SetForecast(icon, FormatForecast(forecast));
+                _view.SetStatus(string.Format(_config.UpdatedStatusFormat, _forecastReceivedAt), false);
+                _hasForecast = true;
                 _hasResult = true;
             }
             catch (OperationCanceledException)
@@ -131,10 +141,7 @@ namespace TestTask.Features.Weather.Presenter
                 Debug.LogWarning($"[Weather] {exception.Message}");
 
                 if (requestId > _lastAppliedId)
-                {
-                    _view.SetError(_config.ErrorMessage);
-                    _hasResult = true;
-                }
+                    ShowError();
             }
             finally
             {
@@ -145,6 +152,21 @@ namespace TestTask.Features.Weather.Presenter
                     UpdateLoading();
                 }
             }
+        }
+
+        private void ShowError()
+        {
+            _hasResult = true;
+
+            if (!_hasForecast)
+            {
+                _view.SetStatus(_config.ErrorMessage, true);
+                return;
+            }
+
+            // Старый прогноз оставляем, но явно помечаем, что он устарел и от какого он времени.
+            _view.SetForecastStale(true);
+            _view.SetStatus(string.Format(_config.StaleStatusFormat, _forecastReceivedAt), true);
         }
 
         private string FormatForecast(WeatherForecast forecast)

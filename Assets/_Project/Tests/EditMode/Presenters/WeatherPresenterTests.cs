@@ -90,7 +90,8 @@ namespace TestTask.Tests
 
             _service.Requests[0].Source.TrySetException(new Exception("network down"));
 
-            Assert.AreEqual(_config.ErrorMessage, _view.ErrorText);
+            Assert.AreEqual(_config.ErrorMessage, _view.StatusText);
+            Assert.IsTrue(_view.IsStatusError);
             Assert.IsFalse(_view.IsLoading);
         }
 
@@ -129,6 +130,68 @@ namespace TestTask.Tests
             Assert.IsFalse(_view.IsVisible);
             Assert.IsTrue(_service.Requests[0].Token.IsCancellationRequested);
             Assert.AreEqual(1, _service.Requests.Count);
+        }
+
+        private string ReceivedAt(DateTimeOffset time, string format) => string.Format(format, time.ToLocalTime());
+
+        [Test]
+        public void Forecast_ShowsLastUpdateTime()
+        {
+            EnterAndRunFirstTick();
+            DateTimeOffset receivedAt = _scheduler.Now;
+
+            _service.Requests[0].Source.TrySetResult(Forecast("Today", 70));
+
+            Assert.AreEqual(ReceivedAt(receivedAt, _config.UpdatedStatusFormat), _view.StatusText);
+            Assert.IsFalse(_view.IsStatusError);
+        }
+
+        [Test]
+        public void RepeatPoll_ShowsUpdatingStatus_InsteadOfBigLoader()
+        {
+            EnterAndRunFirstTick();
+            _service.Requests[0].Source.TrySetResult(Forecast("Today", 70));
+
+            _scheduler.AdvanceBySeconds(Interval);
+
+            Assert.AreEqual(2, _service.Requests.Count);
+            Assert.AreEqual(_config.UpdatingStatus, _view.StatusText);
+            Assert.IsFalse(_view.IsLoading, "Крупный индикатор не должен закрывать уже показанный прогноз");
+            Assert.AreEqual("Сегодня - 70F", _view.ForecastText);
+        }
+
+        [Test]
+        public void RepeatPollError_KeepsForecast_MarksItStale_AndExplains()
+        {
+            EnterAndRunFirstTick();
+            DateTimeOffset receivedAt = _scheduler.Now;
+            _service.Requests[0].Source.TrySetResult(Forecast("Today", 70));
+
+            _scheduler.AdvanceBySeconds(Interval);
+            _service.Requests[1].Source.TrySetException(new Exception("network down"));
+
+            Assert.AreEqual("Сегодня - 70F", _view.ForecastText);
+            Assert.IsTrue(_view.IsStale);
+            Assert.IsTrue(_view.IsStatusError);
+            Assert.AreEqual(ReceivedAt(receivedAt, _config.StaleStatusFormat), _view.StatusText);
+        }
+
+        [Test]
+        public void SuccessAfterError_ClearsStaleMark()
+        {
+            EnterAndRunFirstTick();
+            _service.Requests[0].Source.TrySetResult(Forecast("Today", 70));
+            _scheduler.AdvanceBySeconds(Interval);
+            _service.Requests[1].Source.TrySetException(new Exception("network down"));
+
+            _scheduler.AdvanceBySeconds(Interval);
+            DateTimeOffset receivedAt = _scheduler.Now;
+            _service.Requests[2].Source.TrySetResult(Forecast("Today", 72));
+
+            Assert.IsFalse(_view.IsStale);
+            Assert.IsFalse(_view.IsStatusError);
+            Assert.AreEqual("Сегодня - 72F", _view.ForecastText);
+            Assert.AreEqual(ReceivedAt(receivedAt, _config.UpdatedStatusFormat), _view.StatusText);
         }
     }
 }

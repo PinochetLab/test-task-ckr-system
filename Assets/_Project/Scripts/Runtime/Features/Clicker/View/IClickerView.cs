@@ -17,6 +17,12 @@ namespace TestTask.Features.Clicker.View
         /// <summary>Фидбек успешного нажатия: «пульс» объекта и разлёт частиц.</summary>
         void PlayClickFeedback(int particleCount);
 
+        /// <summary>Награда «+N» с иконкой валюты появляется над курсором и улетает в счётчик (ручной клик).</summary>
+        void ShowRewardAtPointer(string text);
+
+        /// <summary>Награда «+N» появляется в центре объекта и улетает в счётчик (автосбор — клика нет).</summary>
+        void ShowRewardAtCenter(string text);
+
         /// <summary>Фидбек отказа (не хватило энергии).</summary>
         void PlayDenied();
     }
